@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="static/js/jquery-1.11.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+    <title>用户注册页面</title>
+</head>
+<body>
+    
+<div class="container">
+    <div class="row" style="margin-top: 30px;">
+    </div>
+    <div class="row">
+        <div class="col-md-12" align="center">
+            <h3>用户注册</h3>
+        </div>
+    </div>
+    <form id="registerForm">
+    <div class="form-group row justify-content-center" style="margin-top: 20px;">
+        <label class="col-form-label" style=" width: 80px;
+        text-align: center;">用户名</label>
+        <div class="col-sm-4">
+            <input type="text" name="accountName" class="form-control" id="accountName"
+                   placeholder="请输入用户名">
+        </div>
+    </div>
+    <div class="form-group row justify-content-center">
+        <label class="col-form-label" style=" width: 80px;
+        text-align: center;">年龄</label>
+        <div class="col-sm-4">
+            <input type="text" name="age" class="form-control" id="age"
+                   placeholder="请输入年龄">
+        </div>
+    </div>
+    <div class="form-group row justify-content-center align-items-center">
+        <label class="col-form-label" style=" width: 80px;
+        text-align: center;">性别</label>
+        <div class="col-sm-4">
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="gender" id="gender1"
+                       value="m"
+                       checked="checked">
+                <label class="form-check-label" for="gender">男</label>
+            </div>
+            <div class="form-check form-check-inline align-items-center">
+                <input class="form-check-input" type="radio" name="gender" id="gender2"
+                       value="f">
+                <label class="form-check-label" for="gender">女</label>
+            </div>
+        </div>
+    </div>
+    <div class="form-group row justify-content-center">
+        <label class="col-form-label" style=" width: 80px;
+        text-align: center;">手机号</label>
+        <div class="col-sm-4">
+            <input type="text" name="phoneNumber" class="form-control" id="phoneNumber"
+                   placeholder="请输入手机号">
+            <button type="button" class="btn" id="getVerificationCodeBtn">获取验证码</button>
+        </div>
+    </div>
+     <div class="form-group row justify-content-center">
+        <label class="col-form-label" style=" width: 80px;
+        text-align: center;">验证码</label>
+        <div class="col-sm-4">
+            <input type="text" name="verificationCode" class="form-control" id="verificationCode"
+                   placeholder="请输入验证码">
+        </div>
+    </div>
+    <div class="form-group row justify-content-center">
+        <label class="col-form-label" style=" width: 80px;
+        text-align: center;">密码</label>
+        <div class="col-sm-4">
+            <input type="password" name="password" class="form-control" id="password"
+                   placeholder="请输入密码">
+        </div>
+    </div>
+    </form>
+    <div class="form-group row justify-content-center">
+        <div class="form-group row">
+             <button type="button" class="btn btn-primary" id="registerBtn">注册</button>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    jQuery(document).ready(function(){
+        $("#getVerificationCodeBtn").on("click",function(){
+            // 获取手机号并校验
+            var phoneNumber = $("#phoneNumber").val();
+            if (null == phoneNumber || "" == phoneNumber) {
+                alert("手机号不能为空");
+                return false;
+            }
+            $.ajax({
+                type:"POST",
+                url:"http://codenjoyes.com:8081/seckill/getVerificationCode",
+                data:{
+                    "phoneNumber":phoneNumber,
+                },
+                // 后端设置了@CrossOrigin(allowCredentials="true",allowedHeaders="*") ，前端要设置下面内容，才能保证跨域请求成功
+                xhrFields:{withCredentials:true},
+                success:function(result){
+                    if (result.status == "success") {
+                        alert("验证码为："+result.data);
+                        return false;
+                    }else{
+                        alert("验证码发送失败:"+result.data.errorMsg);
+                        return false;
+                    }
+                    
+                }
+            })
+        });
+
+        $("#registerBtn").on("click",function(){
+            // 获取输入的信息并校验
+            var accountName = $("#accountName").val();
+            var age = $("#age").val();
+            var phoneNumber = $("#phoneNumber").val();
+            var verificationCode = $("#verificationCode").val();
+            var password = $("#password").val();
+            if (null == accountName || "" == accountName) {
+                alert("用户名不能为空");
+                return false;
+            }
+            if (null == age || "" == age) {
+                alert("年龄不能为空");
+                return false;
+            }
+            if (null == phoneNumber || "" == phoneNumber) {
+                alert("手机号不能为空");
+                return false;
+            }
+            if (null == verificationCode || "" == verificationCode) {
+                alert("验证码不能为空");
+                return false;
+            }
+            if (null == password || "" == password) {
+                alert("密码不能为空");
+                return false;
+            }
+
+            $.ajax({
+                type:"POST",
+                url:"http://codenjoyes.com:8081/seckill/register",
+                data:$("#registerForm").serialize(),
+                // 后端设置了@CrossOrigin(allowCredentials="true",allowedHeaders="*") ，前端要设置下面内容，才能保证跨域请求成功
+                xhrFields:{withCredentials:true},
+                success:function(result){
+                    if (result.status == "success") {
+                         alert("注册成功");
+						 window.location.href = "login.html";
+                        return false;
+                    }else{
+                        // console.log(result);
+                        alert("注册失败："+result.data.errorMsg);
+                        return false;
+                    }
+                   
+                }
+            });
+
+        });
+
+    });
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="static/js/jquery-1.11.0.min.js"></script>
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/4.0.0/css/bootstrap.min.css"
+      integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <title>商品购买页面</title>
+</head>
+<body>
+    
+<div class="container">
+    <div class="row">
+        <div class="col-md-12" align="center" style="margin-top: 30px;">
+            <h3 class="form-title">购物车结算</h3>
+            <div id="promotionStartDateContainer" class="row justify-content-center" style="margin-top:20px;color:red;">
+                <label class="col-form-label" style=" width: 100px;text-align: center;color:red;">活动开始时间</label>
+                <div class="col-sm-4">
+                     <input type="text" name="startDateInput" readonly class="form-control-plaintext" id="startDateInput" style="text-align: center;color:red;" placeholder="">
+                </div>
+            </div>
+            <div id="promotionStartDateContainer" class="row justify-content-center" style="margin-top:20px;color:red;">
+                <label class="col-form-label" style=" width: 100px;text-align: center;color:red;">活动倒计时</label>
+                <div class="col-sm-4">
+                     <input type="text" name="countdownInput" readonly class="form-control-plaintext" id="countdownInput" style="text-align: center;color:red;" placeholder="">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row justify-content-center" style="margin-top: 40px;">
+       <div class="col-sm-4" align="center">
+            <img id="image" style="width: 100px;height: auto;">
+       </div>
+    </div>
+    <div class="row justify-content-center" style="margin-top: 20px;">
+        <label class="col-form-label" style=" width: 100px;text-align: center;">商品名称</label>
+        <div class="col-sm-4">
+             <input type="text" name="titleInput" readonly class="form-control-plaintext" id="titleInput" style="text-align: center;" placeholder="">
+        </div>
+    </div>
+    <div class="row justify-content-center" style="margin-top: 20px;">
+        <label class="col-form-label" style=" width: 100px;text-align: center;">商品价格</label>
+        <div class="col-sm-4">
+             <input type="text" name="priceInput" readonly class="form-control-plaintext" id="priceInput" style="text-align: center;" placeholder="">
+        </div>
+    </div>
+     <div id="promotionPriceContainer" class="row justify-content-center" style="margin-top: 20px;color:red;">
+        <label class="col-form-label" style=" width: 100px;text-align: center;color:red;">秒杀价</label>
+        <div class="col-sm-4">
+             <input type="text" name="promotionPriceInput" readonly class="form-control-plaintext" id="promotionPriceInput" style="text-align: center;color:red;" placeholder="">
+        </div>
+    </div>
+     <div class="row justify-content-center" style="margin-top: 20px;">
+        <label class="col-form-label" style=" width: 100px;text-align: center;">商品数量</label>
+        <div class="col-sm-4">
+            <input type="text" name="amountInput" class="form-control" id="amountInput" placeholder="请输入要购买的数量">
+        </div>
+    </div>
+    <div class="row justify-content-center" style="margin-top: 20px;">
+        <div class="form-group row">
+             <button type="button" class="btn btn-outline-primary" id="purchaseBtn">购买</button>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+
+    var wareVO = {};
+
+    jQuery(document).ready(function(){
+            var id = getParam("id");
+            // 发送ajax请求，根据id获取商品信息
+            $.ajax({
+                type:"GET",
+                url:"http://codenjoyes.com:8081/seckill/ware/"+id,
+                // 后端设置了@CrossOrigin(allowCredentials="true",allowedHeaders="*") ，前端要设置下面内容，才能保证跨域请求成功
+                xhrFields:{withCredentials:true},
+                success:function(result){
+                    if (result.status == "success") {
+                        wareVO = result.data;
+                        // 调用loadPage()渲染页面
+                        loadPage();
+                        setInterval(loadPage,1000);
+                    }else{
+                         if (result.data.errorCode == 1001) {
+                                alert("请先登录："+result.data.errorMsg);
+                                window.location.href = "login.html";
+                         }else{
+                                alert("获取商品详情失败："+result.data.errorMsg);
+                         }
+                    }
+                   
+                }
+            });
+
+            // 点击购买按钮发送ajax请求购买商品
+            $("#purchaseBtn").on("click",function(){
+                // 获取要购买的数量
+                var amount = $("#amountInput").val();
+                if (null == amount || '' == amount) {
+                    alert("请输入正确的数量");
+                }
+                if (0 == wareVO.promotionStatus) {
+                    alert("活动还未开始，确定按原价购买？土豪我们交朋友吧！");
+                }else if(1 == wareVO.promotionStatus) {
+                    alert("终于等到你，还好我没放弃");
+                }
+
+                // 发送ajax请求购买商品
+                $.ajax({
+                    type:"POST",
+                    url:"http://codenjoyes.com:8081/seckill/order/",
+                    data:{
+                        "wareId":wareVO.id,
+                        "promotionId":wareVO.promotionId,
+                        "amount":$("#amountInput").val()
+                    },
+                    // 后端设置了@CrossOrigin(allowCredentials="true",allowedHeaders="*") ，前端要设置下面内容，才能保证跨域请求成功
+                    xhrFields:{withCredentials:true},
+                    success:function(result){
+                        if (result.status == "success") {
+                            alert("下单成功");
+                        }else{
+                            alert("下单失败："+result.data.errorMsg);
+                        }
+                       
+                    }
+                });
+
+            })
+
+            // 将数据填充到页面
+            function loadPage(){
+                $("#image").attr("src",wareVO.imageUrl);
+                $("#titleInput").val(wareVO.title);
+                $("#priceInput").val(wareVO.price);
+                // 促销活动未开始
+                if (0 == wareVO.promotionStatus) {
+                    // 获取开始时间
+                    var startTime = wareVO.startDate.replace(new RegExp("-","gm"),"/");
+                    startTime = (new Date(startTime)).getTime();
+                    // 获取今天的日期
+                    var today = Date.parse(new Date());
+                    // 获取距活动开始的秒数
+                    var secondCount = (startTime - today)/1000;
+                    // 如果倒计时为0设置活动状态为正在进行
+                    if (secondCount<= 0) {
+                        wareVO.promotionStatus = 1;
+                        loadPage(wareVO);
+                    }
+                    // 根据秒数分别获取天、时、分、秒倒计时
+                    var days = Math.floor(secondCount / (1 * 60 * 60 * 24));
+                    var hours = Math.floor(secondCount / (1 * 60 * 60)) % 24;
+                    var minutes = Math.floor(secondCount / (1 * 60)) % 60;
+                    var seconds = Math.floor(secondCount / 1) % 60;
+
+                    var countdown = days+"天"+hours+"小时"+minutes+"分钟"+seconds+"秒";
+                    $("#startDateInput").val("秒杀活动将于"+wareVO.startDate+"开始");
+                    $("#countdownInput").val(countdown);
+                    $("#promotionPriceInput").val(wareVO.promotionPrice);
+                }else if(1 == wareVO.promotionStatus) {
+                    $("#startDateInput").val("秒杀活动正在进行中，快去剁手吧！");
+                    $("#countdownInput").val("0天0小时0分钟0秒");
+                    $("#promotionPriceInput").val(wareVO.promotionPrice);
+                }
+            }
+
+    });
+
+    // 从url获取需要的参数
+    function getParam(paramName) {
+        paramValue = "", isFound = !1;
+        if (this.location.search.indexOf("?") == 0 && this.location.search.indexOf("=") > 1) {
+            arrSource = unescape(this.location.search).substring(1, this.location.search.length).split("&"), i = 0;
+            while (i < arrSource.length && !isFound) arrSource[i].indexOf("=") > 0
+            && arrSource[i].split("=")[0].toLowerCase() == paramName.toLowerCase()
+            && (paramValue = arrSource[i].split("=")[1], isFound = !0), i++
+        }
+        return paramValue == "" && (paramValue = null), paramValue
+    }
+
+</script>
+
+<style type="text/css">
+     /*设置table中的th和td的内容居中*/
+    .table th, .table td {
+        text-align: center;
+        vertical-align: middle !important;
+    }
+</style>
+
+</body>
+</html>

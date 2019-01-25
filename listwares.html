@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="static/js/jquery-1.11.0.min.js"></script>
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/4.0.0/css/bootstrap.min.css"
+      integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <title>商品浏览页面</title>
+</head>
+<body>
+    
+<div class="container">
+    <div class="row">
+        <div class="col-md-12" align="center" style="margin-top: 30px;">
+            <h3>全部商品展示</h3>
+        </div>
+    </div>
+    <div class="row" style="margin-top: 30px;">
+        <div class="col-md-12 table-responsive">
+            <table class="table table-striped table-bordered">
+                <thead>
+                <tr>
+                    <th scope="col">商品标题</th>
+                    <th scope="col">商品图片</th>
+                    <th scope="col">商品描述</th>
+                    <th scope="col">商品价格</th>
+                    <th scope="col">商品销量</th>
+                    <th scope="col">商品库存</th>
+                </tr>
+                </thead>
+                <tbody id="wareTable">
+                    
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    jQuery(document).ready(function(){
+
+            // 发送ajax请求获取所有商品信息
+            $.ajax({
+                type:"GET",
+                url:"http://codenjoyes.com:8081/seckill/ware",
+                // 后端设置了@CrossOrigin(allowCredentials="true",allowedHeaders="*") ，前端要设置下面内容，才能保证跨域请求成功
+                xhrFields:{withCredentials:true},
+                success:function(result){
+                    if (result.status == "success") {
+                        // 调用loadPage()渲染页面
+                        loadPage(result.data);
+                    }
+                   
+                }
+            });
+
+            // 将数据填充到页面
+            function loadPage(data){
+                for(var i = 0;i<data.length;i++){
+                    // 获取每一个WareVO
+                    var ware = data[i];
+                    var wareDom = "<tr><td>"+ware.title+"</td><td><img style='width:100px;height:auto;' src='"+ware.imageUrl+"'/></td><td style='width:300px;'>"+ware.description+"</td><td>"+ware.price+"</td><td>"+ware.sales+"</td><td>"+ware.stock+"</td><td><button type='button' data-id='"+ware.id+"' id='orderBtn"+ware.id+"' class='btn btn-outline-primary'>下单"+"</button></td></tr>";
+                    $("#wareTable").append($(wareDom));
+                    // 设置点击事件，点击下单按钮跳转到所选商品的购买页面
+                    $("#orderBtn"+ware.id).on("click",function(event){
+                        window.location.href = "purchase.html?id="+$(this).data("id");
+                    });
+                }   
+            }
+
+    });
+
+</script>
+
+<style type="text/css">
+     /*设置table中的th和td的内容居中*/
+    .table th, .table td {
+        text-align: center;
+        vertical-align: middle !important;
+    }
+</style>
+
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="static/js/jquery-1.11.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+    <title>用户登录页面</title>
+</head>
+<body>
+    
+<div class="container">
+    <div class="row" style="margin-top: 60px;">
+    </div>
+    <div class="row">
+        <div class="col-md-12" align="center">
+            <h3>用户登录</h3>
+        </div>
+    </div>
+    <form id="loginForm">
+    <div class="form-group row justify-content-center" style="margin-top: 20px;">
+        <label class="col-form-label" style="width: 80px;
+        text-align: center;">手机号</label>
+        <div class="col-sm-4">
+            <input type="text" name="phoneNumber" class="form-control" id="phoneNumber"
+                   placeholder="请输入手机号">
+        </div>
+    </div>
+    <div class="form-group row justify-content-center">
+        <label class="col-form-label" style="width: 80px;
+        text-align: center;">密码</label>
+        <div class="col-sm-4">
+            <input type="password" name="password" class="form-control" id="password"
+                   placeholder="请输入密码">
+        </div>
+    </div>
+    </form>
+    <div class="form-group row justify-content-center">
+        <div class="col-sm-2" align="center">
+             <button type="button" class="btn btn-primary" id="loginBtn">登录</button>
+        </div>
+        <div class="col-sm-2" align="center">
+             <button type="button" class="btn btn-primary" id="registerBtn">注册</button>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    jQuery(document).ready(function(){
+        $("#loginBtn").on("click",function(){
+            // 获取输入的信息并校验
+            var phoneNumber = $("#phoneNumber").val();
+            var password = $("#password").val();
+            if (null == phoneNumber || "" == phoneNumber) {
+                alert("手机号不能为空");
+                return false;
+            }
+            if (null == password || "" == password) {
+                alert("密码不能为空");
+                return false;
+            }
+            $.ajax({
+                type:"POST",
+                url:"http://codenjoyes.com:8081/seckill/login",
+                data:$("#loginForm").serialize(),
+                // 后端设置了@CrossOrigin(allowCredentials="true",allowedHeaders="*") ，前端要设置下面内容，才能保证跨域请求成功
+                xhrFields:{withCredentials:true},
+                success:function(result){
+                    if (result.status == "success") {
+                         window.location.href = "listwares.html";
+                        return false;
+                    }else{
+                        alert("登录失败："+result.data.errorMsg);
+                        return false;
+                    }
+                   
+                }
+            });
+        });
+
+        $("#registerBtn").on("click",function(){
+            window.location.href = "register.html";
+            return false;
+        });
+
+    });
+
+</script>
+
+</body>
+</html>
